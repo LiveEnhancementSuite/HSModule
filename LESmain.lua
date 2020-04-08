@@ -9,7 +9,7 @@ if console then console:close() end -- if the console is up, close the console. 
 --	Initialisation  --
 ----------------------
 
--- Hammerspoon's default behavior is to look for an init.lua file in the /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData filder; otherwise it will show a popup with a getting started guide.
+-- Hammerspoon's default behavior is to look for an init.lua file in the ~/.les filder; otherwise it will show a popup with a getting started guide.
 -- The modified LES .app package will instead drop the included /Contents/Resources/init.lua into the right spot and force hammerspoon to restart; causing it to check for the init.lua file again (which now exists)
 -- This init.lua file redirects back to the application folder and opens LESmain.lua (this file) inside the app bundle.
 -- This is a super janky way to go about including a script inside a hammerspoon package...
@@ -19,10 +19,10 @@ if console then console:close() end -- if the console is up, close the console. 
 -- and the actual redirect can be found inside your hammerspoon folder or at /Contents/Resources/init.lua
 
 function testfirstrun() -- tests if "firstrun.txt" exists. I use this text file on both mac and windows to keep track of the current version.
-  local filepath = homepath .. "/.hammerspoon/resources/firstrun.txt"
+  local filepath = homepath .. "/.les/resources/firstrun.txt"
   local f=io.open(filepath,"r")
-  if f~=nil then
-    io.close(f)
+  if f~=nil then 
+    io.close(f) 
     return true
   else
     return false
@@ -33,7 +33,7 @@ if testfirstrun() == false then -- stuff to do when you start the program for th
   print("This is the first time running LES")
 
   function setautoadd(newval) -- declaring the function that replaces the "addtostartup" variable in the settings text file to match the users' dialog box selection.
-    local hFile = io.open(homepath .. "/.hammerspoon/settings.ini", "r") --Reading settings.
+    local hFile = io.open(homepath .. "/.les/settings.ini", "r") --Reading settings.
     local restOfFile
     local lineCt = 1
     local newline = "addtostartup = " .. newval .. [[]]
@@ -51,7 +51,7 @@ if testfirstrun() == false then -- stuff to do when you start the program for th
     end
     hFile:close()
 
-    hFile = io.open(homepath .. "/.hammerspoon/settings.ini", "w") --write the file.
+    hFile = io.open(homepath .. "/.les/settings.ini", "w") --write the file.
     for i, line in ipairs(lines) do
       hFile:write(line, "\n")
     end
@@ -59,15 +59,15 @@ if testfirstrun() == false then -- stuff to do when you start the program for th
     hFile:close()
   end
 
-  os.execute("mkdir -p /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources") -- creates the resources folder
-  os.execute("echo '' >/Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/firstrun.txt") -- making sure the section of this script doesn't trigger twice
-  os.execute("echo '' >/Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/strict.txt") -- enables strict time by default
+  os.execute([[mkdir -p ~/.les/resources]]) -- creates the resources folder
+  os.execute([[echo '' >~/.les/resources/firstrun.txt]]) -- making sure the section of this script doesn't trigger twice
+  os.execute([[echo '' >~/.les/resources/strict.txt]]) -- enables strict time by default
 
-  os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/Resources/Configurations/settings.ini /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/]]) -- extracting config defaults from the .Hidden directory embedded inside the modified hammerspoon .app package.
-  os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/Resources/Configurations/menuconfig.ini /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/]])
-  os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/Resources/Audio/readmejingle.wav /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/]])
+  os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/settings.ini ~/.les/]]) -- extracting config defaults from the .Hidden directory embedded inside the modified hammerspoon .app package.
+  os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/menuconfig.ini ~/.les/]])
+  os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/readmejingle.wav ~/.les/resources/]])
 
-  b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "You're all set! Would you like to set LES to launch on login? (this can be changed later)" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+  b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "You're all set! Would you like to set LES to launch on login? (this can be changed later)" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
   -- I'm using applescript to create dialog boxes, becuase it gives me more options about how to present them. I only keep the user's "option", the other variables are basically always cleared right after to save memory.
   print(o)
   b = nil
@@ -85,12 +85,12 @@ end
 
  -- updating LES using the installer basically only replaces the .app file in your applications folder with the new one.
  -- this area of the script makes sure that the init.lua script file is replaced again if I ever make a change to it.
- -- the init.lua file is not THIS file, it's the redirect that's dropped into /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData.
+ -- the init.lua file is not THIS file, it's the redirect that's dropped into ~/.les.
 
 function testcurrentversion(ver)
 
   print("testing for: " .. ver)
-  local filepath = (homepath .. "/.hammerspoon/resources/version.txt")
+  local filepath = (homepath .. "/.les/resources/version.txt")
   local boi = io.open(filepath, "r") -- some of my variable names are super dumb; "version" was already in use so "boi" seemed like the next best choice?
 
   if boi ~= nil then
@@ -110,8 +110,8 @@ function testcurrentversion(ver)
     io.close(boi)
     return false
 
-  else
-    os.execute("echo 'beta 9' >/Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/version.txt")
+  else 
+    os.execute([[echo 'beta 9' >~/.les/resources/version.txt]])
     return true
   end
 
@@ -121,9 +121,9 @@ if testcurrentversion("beta 9") == false and testfirstrun() == true then -- this
   hs.notify.show("Live Enhancement Suite", "Updating and restarting...", "Old installation detected")
   local var = hs.osascript.applescript([[delay 2]])
   if var == true then
-    os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/version.txt")
-    os.execute("echo 'beta 9' >/Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/version.txt")
-    os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/init.lua /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/]]) -- otherwise replace the init.lua again with the one currently in the application.
+    os.execute([[rm ~/.les/resources/version.txt]])
+    os.execute([[echo 'beta 9' >~/.les/resources/version.txt]])
+    os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/init.lua ~/.les/]]) -- otherwise replace the init.lua again with the one currently in the application.
     hs.alert.show("Restarting..")
     hs.osascript.applescript([[delay 2]])
     hs.reload()
@@ -134,28 +134,28 @@ end
 --	Integrity checks  --
 ------------------------
 
--- these functions check the if the files nescesary for the script to function; exist.
+-- these functions check the if the files nescesary for the script to function; exist. 
 -- hammerspoon completely spaces out of they don't.
 -- I declare them up here because it fits the theme of this section of the script.
 
 function testsettings()
-  local filepath = homepath .. "/.hammerspoon/settings.ini"
+  local filepath = homepath .. "/.les/settings.ini"
   local f=io.open(filepath,"r")
   local var = nil
-  if f~=nil then
-    io.close(f)
-    var = true
-  else
-    var = false
+  if f~=nil then 
+    io.close(f) 
+    var = true 
+  else 
+    var = false 
   end
 
   if var == false then
-    b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your settings.ini is missing or corrupt." & return & "Do you want to restore the default settings?" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+    b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your settings.ini is missing or corrupt." & return & "Do you want to restore the default settings?" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
     print(o)
     b = nil
     t = nil
     if o == [[{ 'bhit':'utxt'("Yes") }]] then
-      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Configurations/settings.ini /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/]])
+      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/settings.ini ~/.les/]])
     elseif o == [[{ 'bhit':'utxt'("No") }]] then
       os.exit()
     end
@@ -164,23 +164,23 @@ function testsettings()
 end
 
 function testmenuconfig()
-  local filepath = homepath .. "/.hammerspoon/menuconfig.ini"
+  local filepath = homepath .. "/.les/menuconfig.ini"
   local f=io.open(filepath,"r")
   local var = nil
-  if f~=nil then
-    io.close(f)
-    var = true
-  else
-    var = false
+  if f~=nil then 
+    io.close(f) 
+    var = true 
+  else 
+    var = false 
   end
 
   if var == false then
-    b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your menuconfig.ini is missing or corrupt." & return & "Do you want to restore the default menuconfig?" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+    b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your menuconfig.ini is missing or corrupt." & return & "Do you want to restore the default menuconfig?" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
     print(o)
     b = nil
     t = nil
     if o == [[{ 'bhit':'utxt'("Yes") }]] then
-      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Configurations/menuconfig.ini /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/]])
+      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/menuconfig.ini ~/.les/]])
     elseif o == [[{ 'bhit':'utxt'("No") }]] then
       os.exit()
     end
@@ -197,14 +197,14 @@ end
 -- I was too lazy to make a script that changes the table contents so there's just two tables, one for when there's debug, and one for when there's not.
 
 menubarwithdebugoff = {
-    { title = "Configure Menu", fn = function() hs.osascript.applescript([[do shell script "open /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/menuconfig.ini -a textedit"]]) end },
-    { title = "Configure Settings", fn = function() hs.osascript.applescript([[do shell script "open /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/settings.ini -a textedit"]]) end },
-    { title = "-" },
+    { title = "Configure Menu", fn = function() hs.osascript.applescript([[do shell script "open ~/.les/menuconfig.ini -a textedit"]]) end },
+    { title = "Configure Settings", fn = function() hs.osascript.applescript([[do shell script "open ~/.les/settings.ini -a textedit"]]) end },
+    { title = "-" },  
     { title = "Donate", fn = function() hs.osascript.applescript([[open location "https://www.paypal.me/enhancementsuite"]]) end },
-    { title = "-" },
+    { title = "-" },  
     { title = "Project Time", fn = function() requesttime() end },
     { title = "Strict Time", fn = function() setstricttime() end },
-    { title = "-" },
+    { title = "-" },  
     { title = "Reload", fn = function() reloadLES() end },
     { title = "Website", fn = function() hs.osascript.applescript([[open location "https://enhancementsuite.me"]]) end },
     { title = "Manual", fn = function() hs.osascript.applescript([[open location "https://docs.enhancementsuite.me"]]) end },
@@ -214,26 +214,26 @@ menubarwithdebugoff = {
 menubartabledebugon = {
     { title = "Console", fn = function() hs.openConsole(true) end },
     { title = "Restart", fn = function() if trackname then ; coolfunc() ; end ; hs.reload() end },
-    { title = "Open Hammerspoon Folder", fn = function() hs.osascript.applescript([[do shell script "open /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/ -a Finder"]]) end },
+    { title = "Open Hammerspoon Folder", fn = function() hs.osascript.applescript([[do shell script "open ~/.les/ -a Finder"]]) end },
     { title = "-" },
-    { title = "Configure Menu", fn = function() hs.osascript.applescript([[do shell script "open /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/menuconfig.ini -a textedit"]]) end },
-    { title = "Configure Settings", fn = function() hs.osascript.applescript([[do shell script "open /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/settings.ini -a textedit"]]) end },
-    { title = "-" },
+    { title = "Configure Menu", fn = function() hs.osascript.applescript([[do shell script "open ~/.les/menuconfig.ini -a textedit"]]) end },
+    { title = "Configure Settings", fn = function() hs.osascript.applescript([[do shell script "open ~/.les/settings.ini -a textedit"]]) end },
+    { title = "-" },  
     { title = "Donate", fn = function() hs.osascript.applescript([[open location "https://www.paypal.me/enhancementsuite"]]) end },
-    { title = "-" },
+    { title = "-" },  
     { title = "Project Time", fn = function() requesttime() end },
     { title = "Strict Time", fn = function() setstricttime() end },
-    { title = "-" },
+    { title = "-" },  
     { title = "Reload", fn = function() reloadLES() end },
     { title = "Website", fn = function() hs.osascript.applescript([[open location "https://enhancementsuite.me"]]) end },
     { title = "Manual", fn = function() hs.osascript.applescript([[open location "https://docs.enhancementsuite.me"]]) end },
     { title = "Exit", fn = function() if trackname then ; coolfunc() ; end ; os.exit() end }
 }
 
-filepath = homepath .. "/.hammerspoon/resources/strict.txt"
+filepath = homepath .. "/.les/resources/strict.txt"
 f=io.open(filepath,"r")
-if f~=nil then
-  io.close(f)
+if f~=nil then 
+  io.close(f) 
   _G.stricttimevar = true
   menubarwithdebugoff[7].state = "on"
   menubartabledebugon[11].state = "on"
@@ -273,7 +273,7 @@ menu2 = {
   { title = "-" },
   { title = "Hirajōshi", fn = function() _G.stampselect = "Hirajoshi" end },
   { title = "In-Sen", fn = function() _G.stampselect = "Insen" end },
-  { title = "Iwato", fn = function() _G.stampselect = "Iwato" end },
+  { title = "Iwato", fn = function() _G.stampselect = "Iwato" end }, 
   { title = "Kumoi", fn = function() _G.stampselect = "Kumoi" end } }, title = "World" },
 
   { menu = { { title = "Chromatic/Freeform Jazz", fn = function() _G.stampselect = "Chromatic" end },
@@ -303,7 +303,7 @@ menu2 = {
 -- this is what happens when you hit "readme" in the default plugin menu.
 
 function readme()
-  local readmejingleobj = hs.sound.getByFile(homepath .. "/.hammerspoon/resources/readmejingle.wav")
+  local readmejingleobj = hs.sound.getByFile(homepath .. "/.les/resources/readmejingle.wav")
   readmejingleobj:device(nil)
   readmejingleobj:loopSound(false)
   readmejingleobj:play()
@@ -325,7 +325,7 @@ end
 
 function buildPluginMenu()
 
-  file = io.open("menuconfig.ini", "r")
+  file = io.open("menuconfig.ini", "r") 
   local arr = {}
     for line in file:lines() do
       table.insert (arr, line);
@@ -353,7 +353,7 @@ function buildPluginMenu()
       j = j - 1
     end
   end
-  -- Reverse the order of the array.
+  -- Reverse the order of the array. 
   print(hs.inspect(arr))
   Reverse(arr)
 
@@ -366,7 +366,7 @@ function buildPluginMenu()
       print("divider line found")
       arr[i] = "--"
       table.insert(arr, i, "--")
-    elseif string.len(arr[i]) < 2 and not string.match(arr[i], "%w") then -- this is a bandaid fix preventing lots of empty menu entires
+    elseif string.len(arr[i]) < 2 and not string.match(arr[i], "%w") then -- this is a bandaid fix preventing lots of empty menu entires 
       table.remove(arr, i)
     elseif arr[i] == nil then
       table.remove(arr, i)
@@ -375,7 +375,7 @@ function buildPluginMenu()
     elseif string.match(arr[i], "Readme") or string.match(arr[i], "readme") then
       readmevar = true -- I decided to just have the readme always stick on the bottom since it was easier to program and nobody cares anyway :^)
       table.remove(arr, i)
-    elseif string.find(arr[i], "%-%-") == 1 then
+    elseif string.find(arr[i], "%-%-") == 1 then 
       table.insert(arr, i, "--")
     elseif string.find(arr[i], "End") then
       table.remove(arr, i)
@@ -388,7 +388,7 @@ function buildPluginMenu()
   local subfolderuponelevel = ""
   subfolderhistory = {}
   pluginArray = {}
-
+  
   for i = #arr, 1, - 1 do
     if string.find(string.sub(arr[i],1 ,1), "/") and not string.find(string.sub(arr[i],1 ,2), "//") and not string.find(arr[i], "nocategory") then
       subfoldername = string.gsub(arr[i],'','')
@@ -539,7 +539,7 @@ function buildPluginMenu()
       if string.find(pluginArray[i], "%-%-") or string.find(pluginArray[i], "—") then
         table.insert(_G[categoryName], { title = "-" })
       else
-        table.insert(_G[categoryName], {title = string.sub(thisIndex[3],2), fn = function() loadPlugin(nextIndex[3]) end }) -- inserts plugin
+        table.insert(_G[categoryName], {title = string.sub(thisIndex[3],2), fn = function() loadPlugin(nextIndex[3]) end }) -- inserts plugin 
       end
 
     -- Same scope new folder
@@ -607,9 +607,9 @@ function buildPluginMenu()
     else
       if lastcatagoryName ~= nil then -- this part of the code keeps track of all the subfolder names, so they can be cleared later; preventing double entires on reloadLES()
         if lastcatagoryName ~= categoryName then
-          categorycount = (categorycount + 1)
+          categorycount = (categorycount + 1) 
         end
-      end
+      end 
       lastcatagoryName = categoryName
       categoryhistory[categorycount] = lastcatagoryName
     end
@@ -630,8 +630,8 @@ function buildPluginMenu()
   categorycount = nil
 end
 
-function clearcategories()
-	-- this part of the code goes back through the folder structure history created around line 585 to clear all folders it before rebuilding the menu again.
+function clearcategories() 
+	-- this part of the code goes back through the folder structure history created around line 585 to clear all folders it before rebuilding the menu again. 
 	-- this prevents double entries from showing up after reloadLES() was executed.
   if categoryhistory ~= nil then
     print("category history exists")
@@ -647,11 +647,11 @@ end
 -----------------------------------
 
 function settingserrorbinary(message, range) -- this is a generic error message box function so I didn't have to write this long line out every time
-  if hs.osascript.applescript([[tell application "System Events" to display dialog "Error found in settings.ini" & return & "Value for \"]] .. message .. [[\" is not ]] .. range .. [[." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]]) then os.execute("open /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/settings.ini -a textedit") ; os.exit() end
+  if hs.osascript.applescript([[tell application "System Events" to display dialog "Error found in settings.ini" & return & "Value for \"]] .. message .. [[\" is not ]] .. range .. [[." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]]) then os.execute([[open ~/.les/settings.ini -a textedit]]) ; os.exit() end
 end
 
 function msgBox(message) -- another generic message box function. I only used it once; that's why it's still here.
-  msgboxscript = [[display dialog "]] .. message .. [[" buttons {"ok"} default button "ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]]
+  msgboxscript = [[display dialog "]] .. message .. [[" buttons {"ok"} default button "ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]]
   local b, t, o = hs.osascript.applescript(msgboxscript)
   b = nil
   t = nil
@@ -665,8 +665,8 @@ end
 function buildSettings() -- this function digests the settings.ini file.
   if settingsArray ~= nil then -- if there's something left in the settings file table
     delcount = #settingsArray -- delete the table (to prevent problems when using reloadLES() )
-    for i=0, delcount do
-      settingsArray[i]=nil
+    for i=0, delcount do 
+      settingsArray[i]=nil 
     end
   end
 
@@ -801,11 +801,11 @@ function buildSettings() -- this function digests the settings.ini file.
         settingserrorbinary("double0todelete", "a number between 0 and 1")
       end
       _G.double0todelete = tonumber(_G.double0todelete)
-      msgboxscript = [[display dialog "]] .. _G.double0todelete .. [[" buttons {"ok"} default button "ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]]
+      msgboxscript = [[display dialog "]] .. _G.double0todelete .. [[" buttons {"ok"} default button "ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]]
       if _G.double0todelete > 1 or _G.double0todelete < 0 then
         settingserrorbinary("double0todelete", "a number between 0 and 1")
       end
-    end
+    end  
 
     if string.find(settingsArray[i], "absolutereplace =") then
       print("absolutereplace found")
@@ -859,8 +859,8 @@ function buildSettings() -- this function digests the settings.ini file.
       print("pianorollmacro found")
       if hs.keycodes.map[settingsArray[i]:gsub(".*(.*)%=%s","%1")] == nil and _G.nomacro == nil then -- checks if the entered key exists on the keyboard.
       	-- there is an alternate error message here because the generic one confused too many people.
-        hs.osascript.applescript([[tell application "System Events" to display dialog "Hey! The settings entry for \"pianorollmacro\" is not a character corresponding to a key on your keyboard." & return & "" & return & "Closing this dialog box will open the settings file for you; please change the character under \"pianorollmacro\" to a key that exists on your keyboard and then restart the program. You won't be able to properly use many features without it." & return & "" & return & "LES will continue to run without a proper pianoroll macro mapped." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
-        os.execute("open /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/settings.ini -a textedit")
+        hs.osascript.applescript([[tell application "System Events" to display dialog "Hey! The settings entry for \"pianorollmacro\" is not a character corresponding to a key on your keyboard." & return & "" & return & "Closing this dialog box will open the settings file for you; please change the character under \"pianorollmacro\" to a key that exists on your keyboard and then restart the program. You won't be able to properly use many features without it." & return & "" & return & "LES will continue to run without a proper pianoroll macro mapped." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]]) 
+        os.execute([[open ~/.les/settings.ini -a textedit]])
         _G.nomacro = true -- a variable that keeps track of whether or not there's a working macro, functions that use it will be excluded when there's not.
       else
         _G.pianorollmacro = hs.keycodes.map[settingsArray[i]:gsub(".*(.*)%=%s","%1")]
@@ -949,11 +949,11 @@ function buildMenuBar() -- this function makes the menu bar happen, the one that
   if _G.texticon == 1 then
     LESmenubar:setTitle("LES")
   else
-    LESmenubar:setIcon("/Applications/Live Enhancement Suite.app/Contents/Resources/osxTrayIcon.png", true) -- cool icon :sunglasses:
+    LESmenubar:setIcon("/Applications/Live Enhancement Suite.app/Contents/Resources/extensions/hs/les/assets/osxTrayIcon.png", true) -- cool icon :sunglasses:
   end
 end
 
-function rebuildRcMenu()
+function rebuildRcMenu() 
 -- This function rebuilds the right click menus inside ableton.
 -- The right click menu's are actually just menu bar items, but they're invisible.
 -- Both the pianomenu and the plugin menu are (re)loaded.
@@ -978,7 +978,7 @@ end
 --	Reloading  --
 -----------------
 
-function cheats()
+function cheats() 
 -- This is the function for the cheats menu. I didn't recreate all of the cheets from the windows version, but I did recreate some of them.
 -- it needs to be up here, because it's used in the reloadLES() routine. Functions need to be declared before they're used.
 
@@ -994,7 +994,7 @@ function cheats()
         down1 = true
         down2 = false
         if press2 ~= nil then
-          if (press1 - press2) < 0.2 then
+          if (press1 - press2) < 0.2 then 
             cheatmenu()
          end
         end
@@ -1003,7 +1003,7 @@ function cheats()
         press2 = hs.timer.secondsSinceEpoch()
         down1 = false
         down2 = true
-        if (press2 - press1) < 0.2 then
+        if (press2 - press1) < 0.2 then 
           cheatmenu()
         end
       end
@@ -1037,18 +1037,18 @@ function reloadLES()
   if _G.addtostartup == 1 then -- this thing adds a startup daemon for LES when enabled and removes it when you turn it off.
     print("startup = true")
     hs.autoLaunch(true)
-    os.execute([[launchctl load /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Configurations/live.enhancement.suite.plist]])
+    os.execute([[launchctl load /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/live.enhancement.suite.plist]])
   else
     print("startup = false")
     hs.autoLaunch(false)
-    os.execute([[launchctl unload /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Configurations/live.enhancement.suite.plist]])
+    os.execute([[launchctl unload /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/live.enhancement.suite.plist]]) 
   end
   -- pluginMenu:removeFromMenuBar() -- somehow if stuff doesn't properly get removed
   -- pianoMenu:removeFromMenuBar()
   cheats()
 end
 
-function quickreload()
+function quickreload() 
 -- this quickreload function is used by the dynamicreload feature. The function is executed right before opening the plugin menu, causing the contents to refresh automatically.
 -- it's shorter, smaller, and thus lighter than the full fat reloadLES() function (which became kind of bloaty over time).
   clearcategories()
@@ -1109,7 +1109,7 @@ end)
 
 -- since eventtap.events seems to use quite a bit of CPU on lower end models, I've decided to try and condense a bunch of such shortcuts into this section.
 -- the advantage of this approach is, unlike hs.hotkey, that it sends the original input still.
--- it also allows you to trigger actions on the key down or key up event only, which is nice.
+-- it also allows you to trigger actions on the key down or key up event only, which is nice. 
 
 -- I also tend to prefer tasking the menubar instead of using a cmd keystroke. There seems to be a system bound limit on how fast you can send shortcuts.
 -- by using the menubar instead I'm able to bypass this somehow
@@ -1188,7 +1188,7 @@ _G.quickmacro = hs.eventtap.new({ -- this is the hs.eventtap event that contains
           local newname = nil
 
           if projectname == "Untitled" and o == nil then -- dialog box that warns you when you save as new version on an untitled project
-            local b, t, o = hs.osascript.applescript([[tell application "Ableton Live 10 Suite" to display dialog "Your project name is \"Untitled\"." & return & "Are you sure you want to save it as a new version?" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+            local b, t, o = hs.osascript.applescript([[tell application "Ableton Live 10 Suite" to display dialog "Your project name is \"Untitled\"." & return & "Are you sure you want to save it as a new version?" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
             print(o)
             if o == [[{ 'bhit':'utxt'("No") }]] then
               hs.eventtap.keyStroke(hyper2, "S")
@@ -1204,7 +1204,7 @@ _G.quickmacro = hs.eventtap.new({ -- this is the hs.eventtap event that contains
             local name = (projectname:gsub("(.*)_.*","%1")) -- remove everything prior to the last "_"
 
             if string.find(version, "%.") and string.find(version, "%a") then -- test if the current version syntax has both a decimal and a letter
-              local everythingafterdecimal = version:gsub(".*%.", "") -- process things after decimal and pre decimal
+              local everythingafterdecimal = version:gsub(".*%.", "") -- process things after decimal and pre decimal 
               everythingafterdecimal = everythingafterdecimal:gsub("%a","1")
               version = version:gsub("%..*", "." .. everythingafterdecimal)
             end
@@ -1283,7 +1283,7 @@ _G.quickmacro = hs.eventtap.new({ -- this is the hs.eventtap event that contains
         -- ]])
 
         -- I used to use applescript for this, but it turned out hs.application.selectMenuItem was better.
-
+        
         if string.find(_G.applicationname:path(), "Live 9") then
           _G.applicationname:selectMenuItem(livemenuitems[4].AXChildren[1][13].AXTitle)
         else
@@ -1389,7 +1389,7 @@ _G.quickmacro = hs.eventtap.new({ -- this is the hs.eventtap event that contains
           down12 = true
           down22 = false
           if press22 ~= nil then
-            if (press12 - press22) < 0.05 then
+            if (press12 - press22) < 0.05 then 
               hs.eventtap.keyStroke({}, hs.keycodes.map["delete"], 0)
               press12 = nil
               press22 = nil
@@ -1400,7 +1400,7 @@ _G.quickmacro = hs.eventtap.new({ -- this is the hs.eventtap event that contains
           down12 = false
           down22 = true
           if press12 ~= nil then
-            if (press22 - press12) < 0.05 then
+            if (press22 - press12) < 0.05 then 
               hs.eventtap.keyStroke({}, hs.keycodes.map["delete"], 0)
               press12 = nil
               press22 = nil
@@ -1469,7 +1469,7 @@ _G.quickmacro = hs.eventtap.new({ -- this is the hs.eventtap event that contains
             fraction = 12/29
           end
           if fraction == nil then
-            hs.osascript.applescript([[tell application "Live" to display dialog "If you're seeing this, it means that Midas didn't properly think about the way VST plugins deal with scaling at your current display resolution." & return & "Perhaps you have the plugin (or your OS) set to a custom scaling amount?" & return & "It is recommended to disable the VST specific shortcuts in the settings.ini if you want to continue to use custom scaling" & return & "this shortcuts will be disabled until LES is reloaded." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+            hs.osascript.applescript([[tell application "Live" to display dialog "If you're seeing this, it means that Midas didn't properly think about the way VST plugins deal with scaling at your current display resolution." & return & "Perhaps you have the plugin (or your OS) set to a custom scaling amount?" & return & "It is recommended to disable the VST specific shortcuts in the settings.ini if you want to continue to use custom scaling" & return & "this shortcuts will be disabled until LES is reloaded." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
             scaling = 1
             goto yeet
           end
@@ -1510,7 +1510,7 @@ _G.quickmacro = hs.eventtap.new({ -- this is the hs.eventtap event that contains
             fraction = 13/30
           end
           if fraction == nil then
-            hs.osascript.applescript([[tell application "Live" to display dialog "If you're seeing this, it means that Midas didn't properly think about the way VST plugins deal with scaling at your current display resolution." & return & "Perhaps you have the plugin (or your OS) set to a custom scaling amount?" & return & "It is recommended to disable the VST specific shortcuts in the settings.ini if you want to continue to use custom scaling" & return & "this shortcuts will be disabled until LES is reloaded." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+            hs.osascript.applescript([[tell application "Live" to display dialog "If you're seeing this, it means that Midas didn't properly think about the way VST plugins deal with scaling at your current display resolution." & return & "Perhaps you have the plugin (or your OS) set to a custom scaling amount?" & return & "It is recommended to disable the VST specific shortcuts in the settings.ini if you want to continue to use custom scaling" & return & "this shortcuts will be disabled until LES is reloaded." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
             scaling = 1
             goto yeet
           end
@@ -1556,7 +1556,7 @@ end):start()
 
 -- hs.hotkey shortcuts replace the user's original input; so I use a combination of hs.application.watcher and hs.timer to enable them only when nescesary.
 
-vst1 = hs.hotkey.bind({}, "1", function()
+vst1 = hs.hotkey.bind({}, "1", function() 
   windowname = hs.window.focusedWindow():title()
   if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
     windowframe = hs.window.focusedWindow():frame()
@@ -1585,7 +1585,7 @@ vst1 = hs.hotkey.bind({}, "1", function()
   end
 end)
 
-vst2 = hs.hotkey.bind({}, "2", function()
+vst2 = hs.hotkey.bind({}, "2", function() 
   windowname = hs.window.focusedWindow():title()
   if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
     windowframe = hs.window.focusedWindow():frame()
@@ -1614,7 +1614,7 @@ vst2 = hs.hotkey.bind({}, "2", function()
   end
 end)
 
-vst3 = hs.hotkey.bind({}, "3", function()
+vst3 = hs.hotkey.bind({}, "3", function() 
   windowname = hs.window.focusedWindow():title()
   if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
     windowframe = hs.window.focusedWindow():frame()
@@ -1641,7 +1641,7 @@ vst3 = hs.hotkey.bind({}, "3", function()
   end
 end)
 
-vst4 = hs.hotkey.bind({}, "4", function()
+vst4 = hs.hotkey.bind({}, "4", function() 
   windowname = hs.window.focusedWindow():title()
   if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
     windowframe = hs.window.focusedWindow():frame()
@@ -1668,7 +1668,7 @@ vst4 = hs.hotkey.bind({}, "4", function()
   end
 end)
 
-vst5 = hs.hotkey.bind({}, "5", function()
+vst5 = hs.hotkey.bind({}, "5", function() 
   windowname = hs.window.focusedWindow():title()
   if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "massive" then
     windowframe = hs.window.focusedWindow():frame()
@@ -1815,7 +1815,7 @@ firstRightClick = hs.eventtap.new({
   if timeRMBTime == nil then
     timeRMBTime, firstDown, secondDown = 0, false, true
   end
-
+      
   if (hs.timer.secondsSinceEpoch() - timeRMBTime) > timeFrame then
     timeRMBTime, firstDown, secondDown = 0, false, true
   end
@@ -1918,14 +1918,14 @@ function loadPlugin(plugin)
     hs.eventtap.keyStroke({}, "escape", 0)
   end
 
-
+  
   if _G.resettobrowserbookmark == 1 then
     if _G.loadspeed <= 0.5 then
       sleep2 = hs.osascript.applescript([[delay 0.1]])
     else
       sleep2 = hs.osascript.applescript([[delay 0.3]])
     end
-
+    
     if sleep2 ~= nil then
       bookmarkfunc()
     end
@@ -2026,7 +2026,7 @@ local modifierHandler = hs.eventtap.new({ hs.eventtap.event.types.keyDown, hs.ev
         onlyShiftPressed = v and k == "shift"
         if not onlyShiftPressed then break end
     end
-
+    
     if onlyShiftPressed and _G.pressingshit == false then
         _G.pressingshit = true
         -- print("shit on")
@@ -2048,7 +2048,7 @@ end
 ----------------------------
 
 function cheatmenu()
-  local b, t, o = hs.osascript.applescript[[display dialog "Enter cheat:" default answer "" buttons {"Ok", "Cancel"} default button "Ok" cancel button "Cancel" with title "A mysterious aura surrounds you..." with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog.icns"]]
+  local b, t, o = hs.osascript.applescript[[display dialog "Enter cheat:" default answer "" buttons {"Ok", "Cancel"} default button "Ok" cancel button "Cancel" with title "A mysterious aura surrounds you..." with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/extensions/hs/les/assets/LESdialog.icns"]]
   if o == nil then
     return false
   end
@@ -2066,7 +2066,7 @@ function cheatmenu()
     elseif enteredcheat == "gaster"then
       os.exit()
     elseif enteredcheat == "collab bro" or enteredcheat == "als" or enteredcheat == "adg" then
-      b, t, o = hs.osascript.applescript([[tell application "Live" to display dialog "Doing this will exit your current project without saving. Are you sure?" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+      b, t, o = hs.osascript.applescript([[tell application "Live" to display dialog "Doing this will exit your current project without saving. Are you sure?" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
       b = nil
       t = nil
       if o == [[{ 'bhit':'utxt'("Yes") }]] then
@@ -2080,56 +2080,56 @@ function cheatmenu()
           end
         end
         print("live is closed")
-        os.execute([[mkdir -p /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/als\ Lessons]])
-        os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Live/als\ Lessons/lessonsEN.txt /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/als\ Lessons]])
-        os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Live/als.als /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources]])
+        os.execute([[mkdir -p ~/.les/resources/als\ Lessons]])
+        os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/als\ Lessons/lessonsEN.txt ~/.les/resources/als\ Lessons]])
+        os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/als.als ~/.les/resources]])
         print("done cloning project")
         hs.osascript.applescript([[delay 2
-          tell application "Finder" to open POSIX file "]] .. homepath .. [[/.hammerspoon/resources/als.als"]])
+          tell application "Finder" to open POSIX file "]] .. homepath .. [[/.les/resources/als.als"]])
         return true
       end
 
     elseif enteredcheat == "303" or enteredcheat == "sylenth" then
-      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Audio/arp303.mp3 /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/]])
-      local soundobj = hs.sound.getByFile(homepath .. "/.hammerspoon/resources/arp303.mp3")
+      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/arp303.mp3 ~/.les/resources/]])
+      local soundobj = hs.sound.getByFile(homepath .. "/.les/resources/arp303.mp3")
       soundobj:device(nil)
       soundobj:loopSound(false)
       soundobj:play()
-      os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/arp303.mp3")
+      os.execute([[rm ~/.les/resources/arp303.mp3]])
       hs.osascript.applescript([[delay ]].. math.ceil(soundobj:duration()))
       msgBox("thank you for trying this demo")
 
     elseif enteredcheat == "image line" or enteredcheat == "fl studio" then
-      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Audio/flstudio.mp3 /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/]])
-      local soundobj = hs.sound.getByFile(homepath .. "/.hammerspoon/resources/flstudio.mp3")
+      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/flstudio.mp3 ~/.les/resources/]])
+      local soundobj = hs.sound.getByFile(homepath .. "/.les/resources/flstudio.mp3")
       soundobj:device(nil)
       soundobj:loopSound(false)
       soundobj:play()
-      os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/flstudio.mp3")
+      os.execute([[rm ~/.les/resources/flstudio.mp3]])
 
     elseif enteredcheat == "ghost" or enteredcheat == "ilwag" or enteredcheat == "lvghst" then
-      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Audio/lvghst.mp3 /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/]])
-      local soundobj = hs.sound.getByFile(homepath .. "/.hammerspoon/resources/lvghst.mp3")
+      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/lvghst.mp3 ~/.les/resources/]])
+      local soundobj = hs.sound.getByFile(homepath .. "/.les/resources/lvghst.mp3")
       soundobj:device(nil)
       soundobj:loopSound(false)
       soundobj:play()
-      os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/lvghst.mp3")
+      os.execute([[rm ~/.les/resources/lvghst.mp3]])
 
     elseif enteredcheat == "live enhancement sweet" or enteredcheat == "les" or enteredcheat == "sweet" then
-      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Audio/LES_vox.wav /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/]])
-      local soundobj = hs.sound.getByFile(homepath .. "/.hammerspoon/resources/LES_vox.wav")
+      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/LES_vox.wav ~/.les/resources/]])
+      local soundobj = hs.sound.getByFile(homepath .. "/.les/resources/LES_vox.wav")
       soundobj:device(nil)
       soundobj:loopSound(false)
       soundobj:play()
-      os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/LES_vox.wav")
+      os.execute([[rm ~/.les/resources/LES_vox.wav]])
 
     elseif enteredcheat == "yo twitter" or enteredcheat == "twitter" then
-      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Audio/yotwitter.mp3 /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/]])
-      local soundobj = hs.sound.getByFile(homepath .. "/.hammerspoon/resources/yotwitter.mp3")
+      os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/yotwitter.mp3 ~/.les/resources/]])
+      local soundobj = hs.sound.getByFile(homepath .. "/.les/resources/yotwitter.mp3")
       soundobj:device(nil)
       soundobj:loopSound(false)
       soundobj:play()
-      os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/ yotwitter.mp3")
+      os.execute([[rm ~/.les/resources/ yotwitter.mp3]])
       hs.osascript.applescript([[open location "https://twitter.com/aevitunes"
       open location "https://twitter.com/sylvianyeah"
       open location "https://twitter.com/DylanTallchief"
@@ -2137,10 +2137,10 @@ function cheatmenu()
       open location "https://twitter.com/InvertedSilence"
       open location "https://twitter.com/FalseProdigyUS"
       open location "https://twitter.com/DirectOfficial"]])
-      os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/yotwitter.mp3")
+      os.execute([[rm ~/.les/resources/yotwitter.mp3]])
 
     elseif enteredcheat == "owo" or enteredcheat == "uwu" or enteredcheat == "what's this" or enteredcheat == "what" then
-      msgboxscript = [[display dialog "owowowowoowoowowowoo what's this????????? ^^ nya?" buttons {"ok"} default button "ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]]
+      msgboxscript = [[display dialog "owowowowoowoowowowoo what's this????????? ^^ nya?" buttons {"ok"} default button "ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]]
 
     elseif enteredcheat == "subscribe to dylan tallchief" or enteredcheat == "#dylongang" or enteredcheat == "dylan tallchief" or enteredcheat == "dylantallchief" then
       hs.osascript.applescript([[open location "https://www.youtube.com/c/DylanTallchief?sub_confirmation=1"]])
@@ -2210,7 +2210,7 @@ function setstricttime() -- this function manages the check box in the menu
     menubarwithdebugoff[7].state = "off"
     menubartabledebugon[11].state = "off"
     _G.stricttimevar = false
-    os.execute("rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/strict.txt")
+    os.execute([[rm ~/.les/resources/strict.txt]])
     if appname then
       clock:start()
     end
@@ -2218,7 +2218,7 @@ function setstricttime() -- this function manages the check box in the menu
     menubarwithdebugoff[7].state = "on"
     menubartabledebugon[11].state = "on"
     _G.stricttimevar = true
-    os.execute("echo '' >/Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/strict.txt")
+    os.execute([[echo '' >~/.les/resources/strict.txt]])
     if testLive() ~= true then
       clock:stop()
     end
@@ -2226,19 +2226,19 @@ function setstricttime() -- this function manages the check box in the menu
   buildMenuBar()
 end
 
-function coolfunc(hswindow, appname, straw) -- function that handles saving and loading of project times in /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/time/
+function coolfunc(hswindow, appname, straw) -- function that handles saving and loading of project times in ~/.les/resources/time/
 
   if trackname ~= nil then -- saving old time
     oldtrackname = trackname
     print(_G["timer_" .. oldtrackname])
-    os.execute([[mkdir /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/time]])
-    local filepath = homepath .. [[/.hammerspoon/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]]
+    os.execute([[mkdir ~/.les/resources/time]])
+    local filepath = homepath .. [[/.les/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]]
     local f2=io.open(filepath,"r")
     if f2~=nil then
       io.close(f2)
-      os.execute([[rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]])
+      os.execute([[rm ~/.les/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]])
     end
-    os.execute([[echo ']] .. _G["timer_" .. oldtrackname] .. [[' >/Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]])
+    os.execute([[echo ']] .. _G["timer_" .. oldtrackname] .. [[' >~/.les/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]])
     _G["timer_" .. oldtrackname] = nil
   end
 
@@ -2258,16 +2258,16 @@ function coolfunc(hswindow, appname, straw) -- function that handles saving and 
     return
   end
 
-  filepath = homepath .. [[/.hammerspoon/resources/time/]] .. trackname .. "_time" .. [[.txt]] -- loading old time (if it exists)
+  filepath = homepath .. [[/.les/resources/time/]] .. trackname .. "_time" .. [[.txt]] -- loading old time (if it exists)
   local f=io.open(filepath,"r")
-  if f~=nil then
+  if f~=nil then 
     print("timer file found")
     local lines = {}
     for line in f:lines() do
       print("old timer found for this project: " .. line)
       _G["timer_" .. trackname] = line
     end
-    return true
+    return true 
   else
     return
   end
@@ -2275,7 +2275,7 @@ end
 windowfilter = hs.window.filter.new({'Live'}, nil) -- activating the window filter
 windowfilter:subscribe(hs.window.filter.windowTitleChanged,coolfunc) -- if the title of the active window changes, execute this function again.
 
-function timerfunc()
+function timerfunc() 
 -- function that writes the time and checks for vst windows if nescesary (currently in seconds)
 -- unfortunately I couldn't use the appwatcher for this, because the app watcher doesn't detect window switches within the same application..
   if vstshortcuts == 1 then
@@ -2311,7 +2311,7 @@ function timerfunc()
     elseif string.lower(string.gsub(hs.window.focusedWindow():title(), "(.*)/.*$","%1")) == "kick 2" then
       if vstshenabled == 0 then
         print("vst window found")
-        vstshenabled = 1
+        vstshenabled = 1 
         undo:enable()
         redo:enable()
       end
@@ -2334,7 +2334,7 @@ function timerfunc()
   if trackname ~= nil then
     if _G["timer_" .. trackname] == nil then
       _G["timer_" .. trackname] = 1
-    else
+    else 
       _G["timer_" .. trackname] = _G["timer_" .. trackname] + 1
     end
   end
@@ -2372,23 +2372,23 @@ function requesttime() -- this is the function for when someone checks the curre
   if response == "Reset Time" then
     response = hs.dialog.blockAlert("Are you sure?", "This action cannot be undone", "No", "Yes", "NSCriticalAlertStyle")
     if response == "Yes" then
-      os.execute([[rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/time/]] .. trackname .. "_time" .. [[.txt]])
+      os.execute([[rm ~/.les/resources/time/]] .. trackname .. "_time" .. [[.txt]])
       coolfunc()
     end
   end
   -- if trackname == "unsaved_project" then
-  --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "The total time you've spent in unsaved projects is" & return & "]] .. currenttime .. [[." buttons {"Reset Time", "Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+  --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "The total time you've spent in unsaved projects is" & return & "]] .. currenttime .. [[." buttons {"Reset Time", "Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
   -- else
-  --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "The total time you've spent in the []] .. trackname .. [[] project is" & return & "]] .. currenttime .. [[." buttons {"Reset Time", "Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+  --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "The total time you've spent in the []] .. trackname .. [[] project is" & return & "]] .. currenttime .. [[." buttons {"Reset Time", "Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
   -- end
   -- b = nil
   -- t = nil
   -- if o == [[{ 'bhit':'utxt'("Reset Time") }]] then
-  --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "Are you sure?" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+  --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "Are you sure?" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
   --   if o == [[{ 'bhit':'utxt'("Yes") }]] then
   --     _G["timer_" .. trackname] = nil
   --     _G["timer_" .. oldtrackname] = nil
-  --     os.execute([[rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/resources/time/]] .. trackname .. "_time" .. [[.txt]])
+  --     os.execute([[rm ~/.les/resources/time/]] .. trackname .. "_time" .. [[.txt]])
   --     coolfunc()
   --   end
   -- end
@@ -2621,7 +2621,7 @@ function GypsyM()
 end
 
 function Hirajoshi()
-  hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
+  hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0) 
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
@@ -2630,7 +2630,7 @@ end
 function Insen()
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
-  hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
+  hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0) 
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0) ; hs.eventtap.keyStroke({}, "Up", 0)
 end
 
@@ -2720,7 +2720,7 @@ function Maj()
   for i = 1, 3, 1 do
     hs.eventtap.keyStroke({}, "Up", 0)
   end
-end
+end 
 
 function Min()
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0)
@@ -2731,7 +2731,7 @@ function Min()
   for i = 1, 4, 1 do
     hs.eventtap.keyStroke({}, "Up", 0)
   end
-end
+end 
 
 function Aug()
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0)
@@ -2742,7 +2742,7 @@ function Aug()
   for i = 1, 4, 1 do
     hs.eventtap.keyStroke({}, "Up", 0)
   end
-end
+end 
 
 function Dim()
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0)
@@ -2753,7 +2753,7 @@ function Dim()
   for i = 1, 3, 1 do
     hs.eventtap.keyStroke({}, "Up", 0)
   end
-end
+end 
 
 function Maj7()
   hs.eventtap.keyStroke({"cmd"}, "C", 0) ; hs.eventtap.keyStroke({"cmd"}, "V", 0)
@@ -2861,29 +2861,29 @@ end
 -----------------------------------------------------------
 
 if _G.bookmarkx == nil or _G.dynamicreload == nil or _G.double0todelete == nil then -- hostile update; closes LES if you don't reset the settings.
-  b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your settings.ini file is missing parameters because it is from an older version. Do you want to replace it with the new default? This will clear your personal settings (not the configuration of the menu)" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+  b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your settings.ini file is missing parameters because it is from an older version. Do you want to replace it with the new default? This will clear your personal settings (not the configuration of the menu)" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
   print(o)
   b = nil
   t = nil
   if o == [[{ 'bhit':'utxt'("Yes") }]] then
-    os.execute([[rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/settings.ini]])
-    os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Configurations/settings.ini /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/]])
+    os.execute([[rm ~/.les/settings.ini]])
+    os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/settings.ini ~/.les/]])
     reloadLES()
   elseif o == [[{ 'bhit':'utxt'("No") }]] then
-    hs.osascript.applescript([[tell application "System Events" to display dialog "LES will exit." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+    hs.osascript.applescript([[tell application "System Events" to display dialog "LES will exit." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
     os.exit()
   end
   o = nil
 end
 
 if _G.absolutereplace == nil or _G.enableclosewindow == nil or _G.vstshortcuts == nil then -- non-hostile update
-  b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your settings.ini file is missing parameters because it is from an older version. Do you want to replace it with the new default? Updating the file will clear your personal settings, so make a backup before you do (this is not the configuration of the menu)" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/LESdialog2.icns"]])
+  b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "Your settings.ini file is missing parameters because it is from an older version. Do you want to replace it with the new default? Updating the file will clear your personal settings, so make a backup before you do (this is not the configuration of the menu)" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/AppIcon.icns"]])
   print(o)
   b = nil
   t = nil
   if o == [[{ 'bhit':'utxt'("Yes") }]] then
-    os.execute([[rm /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/settings.ini]])
-    os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/lua/Resources/Configurations/settings.ini /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/UserData/]])
+    os.execute([[rm ~/.les/settings.ini]])
+    os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/settings.ini ~/.les/]])
     reloadLES()
   end
   o = nil
