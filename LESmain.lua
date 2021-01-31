@@ -206,7 +206,7 @@ menubarwithdebugoff = {
     { title = "Strict Time", fn = function() setstricttime() end },
     { title = "-" },  
     { title = "Reload", fn = function() reloadLES() end },
-    { title = "Website", fn = function() hs.osascript.applescript([[open location "https://enhancementsuite.me"]]) end },
+    { title = "Install InsertWhere", fn = function() InstallInsertWhere() end },
     { title = "Manual", fn = function() hs.osascript.applescript([[open location "https://docs.enhancementsuite.me"]]) end },
     { title = "Exit", fn = function() if trackname then ; coolfunc() ; end ; os.exit() end }
 }
@@ -225,7 +225,7 @@ menubartabledebugon = {
     { title = "Strict Time", fn = function() setstricttime() end },
     { title = "-" },  
     { title = "Reload", fn = function() reloadLES() end },
-    { title = "Website", fn = function() hs.osascript.applescript([[open location "https://enhancementsuite.me"]]) end },
+    { title = "Install InsertWhere", fn = function() InstallInsertWhere() end },
     { title = "Manual", fn = function() hs.osascript.applescript([[open location "https://docs.enhancementsuite.me"]]) end },
     { title = "Exit", fn = function() if trackname then ; coolfunc() ; end ; os.exit() end }
 }
@@ -1065,6 +1065,19 @@ end
 
 reloadLES() -- when the script reaches this point, reloadLES is executed for a first time - finally actually doing all the stuff up above.
 
+function InstallInsertWhere()
+	local b, t, o = hs.osascript.applescript([[tell application "System Events" to display dialog "InsertWhere is a Max For Live companion device developed by Mat Zo." & return & "InsertWhere allows you to change the position where plugins are autoinserted after using the LES plugin menu." & return & "Once loaded, it will allow you to switch between these settings:" & return & "" & return & " - Autoadd plugins before the one you have selected" & return & " - Autoadd plugins after the the one you have selected" & return & " - Always autoadd plugins at the end of the chain like normal." & return & "" & return & "To activate InsertWhere, place a single instance of the device on the master channel in your project and choose your desired setting." & return & "" & return & "Do you want to install the InsertWhere M4L plugin?" buttons {"Yes", "No"} default button "Yes" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/extensions/hs/les/assets/LESdialog.icns"]])
+	print(o)
+	if o == [[{ 'bhit':'utxt'("Yes") }]] then
+		hs.osascript.applescript([[tell application "System Events" to display dialog "Please select the location where you want LES to extract the InsertWhere companion plugin." & return & "" & return & "Recommended: Ableton User Library" buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/extensions/hs/les/assets/LESdialog.icns"]])
+		extractLocation = hs.dialog.chooseFileOrFolder("Please select the location to extract InsertWhere:", "~/Music/Ableton/User Library", false, true, false, true, true)
+		if extractLocation ~= nil then
+			os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/InsertWhere.amxd ~/]]) -- Please add the path that comes out of the table "extractlocation"  in this command!
+			hs.osascript.applescript([[tell application "System Events" to display dialog "Succes!!" & return & "For extra ease of use, include InsertWhere in your default template." & return & "" & return & "For more information on InsertWhere, visit the documentation website linked under the ""Manual 📖"" button in the tray." & return & "" & return & "Thank you Mat Zo for making this amazing device!" buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/extensions/hs/les/assets/LESdialog.icns"]])
+		end
+	end
+end
+
 -----------------------
 --	Macro shortcuts  --
 -----------------------
@@ -1556,177 +1569,39 @@ end):start()
 
 -- hs.hotkey shortcuts replace the user's original input; so I use a combination of hs.application.watcher and hs.timer to enable them only when nescesary.
 
-vst1 = hs.hotkey.bind({}, "1", function() 
-  windowname = hs.window.focusedWindow():title()
-  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 2/9)
-    postpoint["y"] = windowframe.y + titlebarheight() + 20
+if vstshortcuts == 1 then
+	undo = hs.hotkey.bind({"cmd"}, "z", function() -- kick 2 undo
+	  windowname = hs.window.focusedWindow():title()
+	  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "kick 2" then
+	    windowframe = hs.window.focusedWindow():frame()
+	    prepoint = hs.mouse.getAbsolutePosition()
+	    postpoint = {}
+	    postpoint["x"] = windowframe.x + (windowframe.w / 3.40)
+	    postpoint["y"] = windowframe.y + titlebarheight() + 85
 
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
+	    hs.eventtap.middleClick(postpoint, 12000) -- for some reason middle click works but not left click
+	    -- hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
+	    hs.timer.usleep(12000)
+	    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
+	  end
+	end)
 
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  elseif string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "sylenth1" or string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "sylenth" then
-    Sylenth()
-  elseif string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "massive" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 15/958)
-    postpoint["y"] = windowframe.y + titlebarheight() + (windowframe.h*72/680)
+	redo = hs.hotkey.bind({"cmd", "shift"}, "z", function() -- kick 2 redo
+	  windowname = hs.window.focusedWindow():title()
+	  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "kick 2" then
+	    windowframe = hs.window.focusedWindow():frame()
+	    prepoint = hs.mouse.getAbsolutePosition()
+	    postpoint = {}
+	    postpoint["x"] = windowframe.x + (windowframe.w / 3.19)
+	    postpoint["y"] = windowframe.y + titlebarheight() + 85
 
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  end
-end)
-
-vst2 = hs.hotkey.bind({}, "2", function() 
-  windowname = hs.window.focusedWindow():title()
-  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 25/90)
-    postpoint["y"] = windowframe.y + titlebarheight() + 20
-
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  elseif string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "sylenth1" or string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "sylenth" then
-    Sylenth()
-  elseif string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "massive" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 15/958)
-    postpoint["y"] = windowframe.y + titlebarheight() + (windowframe.h*186/680)
-
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  end
-end)
-
-vst3 = hs.hotkey.bind({}, "3", function() 
-  windowname = hs.window.focusedWindow():title()
-  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 325/900)
-    postpoint["y"] = windowframe.y + titlebarheight() + 20
-
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  elseif string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "massive" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 15/958)
-    postpoint["y"] = windowframe.y + titlebarheight() + (windowframe.h*305/680)
-
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  end
-end)
-
-vst4 = hs.hotkey.bind({}, "4", function() 
-  windowname = hs.window.focusedWindow():title()
-  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "serum" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 4/9)
-    postpoint["y"] = windowframe.y + titlebarheight() + 20
-
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  elseif string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "massive" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 15/958)
-    postpoint["y"] = windowframe.y + titlebarheight() + (windowframe.h*433/680)
-
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  end
-end)
-
-vst5 = hs.hotkey.bind({}, "5", function() 
-  windowname = hs.window.focusedWindow():title()
-  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "massive" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w * 15/958)
-    postpoint["y"] = windowframe.y + titlebarheight() + (windowframe.h*547/680)
-
-    hs.eventtap.leftClick(postpoint, 0)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  end
-end)
-
-function Sylenth()
-  prepoint = hs.mouse.getAbsolutePosition()
-  windowframe = hs.window.focusedWindow():frame()
-  postpoint = {}
-  postpoint["x"] = windowframe.x + (windowframe.w*10/19)
-  postpoint["y"] = windowframe.y + titlebarheight() + 20
-  hs.eventtap.leftClick(postpoint, 0)
-  hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-
-  hs.eventtap.middleClick(prepoint, 0)
+	    hs.eventtap.middleClick(postpoint, 12000) -- for some reason middle click works but not left click
+	    -- hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
+	    hs.timer.usleep(12000)
+	    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post()
+	  end
+	end)
 end
-
-undo = hs.hotkey.bind({"cmd"}, "z", function() -- kick 2 undo
-  windowname = hs.window.focusedWindow():title()
-  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "kick 2" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w / 3.40)
-    postpoint["y"] = windowframe.y + titlebarheight() + 85
-
-    hs.eventtap.middleClick(postpoint, 12000) -- for some reason middle click works but not left click
-    -- hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-    hs.timer.usleep(12000)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post() -- a disconnected left click up event is faster than hs.mouse.setAbsolutePosition()
-  end
-end)
-
-redo = hs.hotkey.bind({"cmd", "shift"}, "z", function() -- kick 2 redo
-  windowname = hs.window.focusedWindow():title()
-  if string.lower(string.gsub(windowname, "(.*)/.*$","%1")) == "kick 2" then
-    windowframe = hs.window.focusedWindow():frame()
-    prepoint = hs.mouse.getAbsolutePosition()
-    postpoint = {}
-    postpoint["x"] = windowframe.x + (windowframe.w / 3.19)
-    postpoint["y"] = windowframe.y + titlebarheight() + 85
-
-    hs.eventtap.middleClick(postpoint, 12000) -- for some reason middle click works but not left click
-    -- hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], postpoint):post()
-    hs.timer.usleep(12000)
-    hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], prepoint):post()
-  end
-end)
 
 -----------------------------
 --  Right CLicking & Menus --
@@ -2167,11 +2042,6 @@ function disablemacros() -- this function stops all of the eventtap events, caus
 
   if vstshortcuts == 1 then
     vstshenabled = 0
-    vst1:disable()
-    vst2:disable()
-    vst3:disable()
-    vst4:disable()
-    vst5:disable()
     undo:disable()
     redo:disable()
   end
@@ -2282,33 +2152,7 @@ function timerfunc()
     if hs.window.focusedWindow() == nil then
       return
     end
-    if string.lower(string.gsub(hs.window.focusedWindow():title(), "(.*)/.*$","%1")) == "serum" then
-      if vstshenabled == 0 then
-        print("vst window found")
-        vstshenabled = 1
-        vst1:enable()
-        vst2:enable()
-        vst3:enable()
-        vst4:enable()
-      end
-    elseif string.lower(string.gsub(hs.window.focusedWindow():title(), "(.*)/.*$","%1")) == "sylenth1" or string.lower(string.gsub(hs.window.focusedWindow():title(), "(.*)/.*$","%1")) == "sylenth" then
-      if vstshenabled == 0 then
-        print("vst window found")
-        vstshenabled = 1
-        vst1:enable()
-        vst2:enable()
-      end
-    elseif string.lower(string.gsub(hs.window.focusedWindow():title(), "(.*)/.*$","%1")) == "massive" then
-      if vstshenabled == 0 then
-        print("vst window found")
-        vstshenabled = 1
-        vst1:enable()
-        vst2:enable()
-        vst3:enable()
-        vst4:enable()
-        vst5:enable()
-      end
-    elseif string.lower(string.gsub(hs.window.focusedWindow():title(), "(.*)/.*$","%1")) == "kick 2" then
+    if string.lower(string.gsub(hs.window.focusedWindow():title(), "(.*)/.*$","%1")) == "kick 2" then
       if vstshenabled == 0 then
         print("vst window found")
         vstshenabled = 1 
@@ -2318,11 +2162,6 @@ function timerfunc()
     elseif vstshenabled == 1 then
       print("vst shortcuts disabled in-daw")
       vstshenabled = 0
-      vst1:disable()
-      vst2:disable()
-      vst3:disable()
-      vst4:disable()
-      vst5:disable()
       undo:disable()
       redo:disable()
     end
