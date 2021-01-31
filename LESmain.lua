@@ -1071,6 +1071,7 @@ function InstallInsertWhere()
 	if o == [[{ 'bhit':'utxt'("Yes") }]] then
 		hs.osascript.applescript([[tell application "System Events" to display dialog "Please select the location where you want LES to extract the InsertWhere companion plugin." & return & "" & return & "Recommended: Ableton User Library" buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/extensions/hs/les/assets/LESdialog.icns"]])
 		extractLocation = hs.dialog.chooseFileOrFolder("Please select the location to extract InsertWhere:", "~/Music/Ableton/User Library", false, true, false, true, true)
+		print(hs.inspect(extractLocation))
 		if extractLocation ~= nil then
 			os.execute([[cp /Applications/Live\ Enhancement\ Suite.app/Contents/Resources/extensions/hs/les/assets/InsertWhere.amxd ~/]]) -- Please add the path that comes out of the table "extractlocation"  in this command!
 			hs.osascript.applescript([[tell application "System Events" to display dialog "Succes!!" & return & "For extra ease of use, include InsertWhere in your default template." & return & "" & return & "For more information on InsertWhere, visit the documentation website linked under the ""Manual 📖"" button in the tray." & return & "" & return & "Thank you Mat Zo for making this amazing device!" buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file "/Applications/Live Enhancement Suite.app/Contents/Resources/extensions/hs/les/assets/LESdialog.icns"]])
