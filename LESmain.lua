@@ -6,7 +6,7 @@ version = "release v15" -- allows users to check the version of the script file 
 if console then console:close() end -- if the console is up, close the console. This workaround prevents hammerspoon from shoving the console in your face at startup.
 
 iconPath = [["]] .. hs.processInfo["bundlePath"] .. [[/Contents/Resources/AppIcon.icns]] .. [["]] -- Quotation marks are added
-resourcePath = hs.processInfo["bundlePath"] .. [[/Contents/Resources/extensions/hs/les/les]]	  -- Quotation marks are missing
+resourcePath = hs.processInfo["bundlePath"] .. [[/Contents/Resources/extensions/hs/les]]	  -- Quotation marks are missing
 
 ----------------------
 --	Initialisation  --
