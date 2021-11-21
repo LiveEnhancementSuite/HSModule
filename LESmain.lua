@@ -211,12 +211,12 @@ end
 menubarwithdebugoff = {{
     title = "Configure Menu",
     fn = function()
-        hs.osascript.applescript([[do shell script "open ~/.les/menuconfig.ini -a textedit"]])
+        ShellNSOpen(JoinPaths(ScriptUserPath, "menuconfig.ini"), "TextEdit")
     end
 }, {
     title = "Configure Settings",
     fn = function()
-        hs.osascript.applescript([[do shell script "open ~/.les/settings.ini -a textedit"]])
+        ShellNSOpen(JoinPaths(ScriptUserPath, "settings.ini"), "TextEdit")
     end
 }, {title = "-"}, {
     title = "Donate",
@@ -276,17 +276,17 @@ menubartabledebugon = {{
 }, {
     title = "Open Hammerspoon Folder",
     fn = function()
-        hs.osascript.applescript([[do shell script "open ~/.les/ -a Finder"]])
+        ShellNSOpen(ScriptUserPath, "Finder")
     end
 }, {title = "-"}, {
     title = "Configure Menu",
     fn = function()
-        hs.osascript.applescript([[do shell script "open ~/.les/menuconfig.ini -a textedit"]])
+        ShellNSOpen(JoinPaths(ScriptUserPath, "menuconfig.ini"), "TextEdit")
     end
 }, {
     title = "Configure Settings",
     fn = function()
-        hs.osascript.applescript([[do shell script "open ~/.les/settings.ini -a textedit"]])
+        ShellNSOpen(JoinPaths(ScriptUserPath, "settings.ini"), "TextEdit")
     end
 }, {title = "-"}, {
     title = "Donate",
@@ -753,7 +753,7 @@ function settingserrorbinary(message, range) -- this is a generic error message 
             message .. [[\" is not ]] .. range ..
             [[." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file ]] ..
             BundleIconPath) then
-        os.execute([[open ~/.les/settings.ini -a textedit]]);
+        ShellNSOpen(JoinPaths(ScriptUserPath, "settings.ini"), "TextEdit")
         os.exit()
     end
 end
@@ -976,7 +976,7 @@ function buildSettings() -- this function digests the settings.ini file.
                 hs.osascript.applescript(
                     [[tell application "System Events" to display dialog "Hey! The settings entry for \"pianorollmacro\" is not a character corresponding to a key on your keyboard." & return & "" & return & "Closing this dialog box will open the settings file for you; please change the character under \"pianorollmacro\" to a key that exists on your keyboard and then restart the program. You won't be able to properly use many features without it." & return & "" & return & "LES will continue to run without a proper pianoroll macro mapped." buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file ]] ..
                         BundleIconPath)
-                os.execute([[open ~/.les/settings.ini -a textedit]])
+                ShellNSOpen(JoinPaths(ScriptUserPath, "settings.ini"), "TextEdit")
                 _G.nomacro = true -- a variable that keeps track of whether or not there's a working macro, functions that use it will be excluded when there's not.
             else
                 _G.pianorollmacro = hs.keycodes.map[settingsArray[i]:gsub(".*(.*)%=%s", "%1")]
