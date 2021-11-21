@@ -2359,46 +2359,19 @@ function cheatmenu()
             end
 
         elseif enteredcheat == "303" or enteredcheat == "sylenth" then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/arp303.mp3 ~/.les/resources/]])
-            local soundobj = hs.sound.getByFile(HomePath .. "/.les/resources/arp303.mp3")
-            soundobj:device(nil)
-            soundobj:loopSound(false)
-            soundobj:play()
-            os.execute([[rm ~/.les/resources/arp303.mp3]])
-            hs.osascript.applescript([[delay ]] .. math.ceil(soundobj:duration()))
-            msgBox("thank you for trying this demo")
+            HSPlayAudioFile(JoinPaths(BundleResourceAssetsPath, "arp303.mp3"))
 
         elseif enteredcheat == "image line" or enteredcheat == "fl studio" then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/flstudio.mp3 ~/.les/resources/]])
-            local soundobj = hs.sound.getByFile(HomePath .. "/.les/resources/flstudio.mp3")
-            soundobj:device(nil)
-            soundobj:loopSound(false)
-            soundobj:play()
-            os.execute([[rm ~/.les/resources/flstudio.mp3]])
+            HSPlayAudioFile(JoinPaths(BundleResourceAssetsPath, "flstudio.mp3"))
 
         elseif enteredcheat == "ghost" or enteredcheat == "ilwag" or enteredcheat == "lvghst" then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/lvghst.mp3 ~/.les/resources/]])
-            local soundobj = hs.sound.getByFile(HomePath .. "/.les/resources/lvghst.mp3")
-            soundobj:device(nil)
-            soundobj:loopSound(false)
-            soundobj:play()
-            os.execute([[rm ~/.les/resources/lvghst.mp3]])
+            HSPlayAudioFile(JoinPaths(BundleResourceAssetsPath, "lvghst.mp3"))
 
         elseif enteredcheat == "live enhancement sweet" or enteredcheat == "les" or enteredcheat == "sweet" then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/LES_vox.wav ~/.les/resources/]])
-            local soundobj = hs.sound.getByFile(HomePath .. "/.les/resources/LES_vox.wav")
-            soundobj:device(nil)
-            soundobj:loopSound(false)
-            soundobj:play()
-            os.execute([[rm ~/.les/resources/LES_vox.wav]])
+            HSPlayAudioFile(JoinPaths(ScriptUserResourcesPath, "LES_vox.wav"))
 
         elseif enteredcheat == "yo twitter" or enteredcheat == "twitter" then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/yotwitter.mp3 ~/.les/resources/]])
-            local soundobj = hs.sound.getByFile(HomePath .. "/.les/resources/yotwitter.mp3")
-            soundobj:device(nil)
-            soundobj:loopSound(false)
-            soundobj:play()
-            os.execute([[rm ~/.les/resources/ yotwitter.mp3]])
+            HSPlayAudioFile(JoinPaths(BundleResourceAssetsPath, "yotwitter.mp3"))
             hs.osascript.applescript([[open location "https://twitter.com/aevitunes"
       open location "https://twitter.com/sylvianyeah"
       open location "https://twitter.com/DylanTallchief"
@@ -2406,7 +2379,6 @@ function cheatmenu()
       open location "https://twitter.com/InvertedSilence"
       open location "https://twitter.com/FalseProdigyUS"
       open location "https://twitter.com/DirectOfficial"]])
-            os.execute([[rm ~/.les/resources/yotwitter.mp3]])
 
         elseif enteredcheat == "owo" or enteredcheat == "uwu" or enteredcheat == "what's this" or enteredcheat == "what" then
             msgboxscript =

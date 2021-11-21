@@ -58,3 +58,12 @@ end
 function ShellDeleteFile(destination)
     ShellExec("rm -rf " .. QuoteString(destination))
 end
+
+-- Functions that interface with Hammerspoon
+-- but exist only to reduce repetition
+function HSPlayAudioFile(filepath)
+    local soundobj = hs.sound.getByFile(filepath)
+    soundobj:device(nil)
+    soundobj:loopSound(false)
+    soundobj:play()
+end
