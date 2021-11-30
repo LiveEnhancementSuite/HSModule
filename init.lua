@@ -23,4 +23,5 @@ if hs.accessibilityState() == false then -- testing if hammerspoon has accessibi
     os.exit()
 end
 
+package.path = package.path .. ";" .. bundlePath .. [[/Contents/Resources/extensions/hs/les/?.lua]]
 dofile(bundlePath .. [[/Contents/Resources/extensions/hs/les/LESmain.lua]])
