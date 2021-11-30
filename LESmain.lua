@@ -24,7 +24,7 @@ end -- if the console is up, close the console. This workaround prevents hammers
 -- and the actual redirect can be found inside your hammerspoon folder or at /Contents/Resources/init.lua
 
 function testfirstrun() -- tests if "firstrun.txt" exists. I use this text file on both mac and windows to keep track of the current version.
-    local filepath = HomePath .. "/.les/resources/firstrun.txt"
+    local filepath = GetDataPath("resources/firstrun.txt")
     local f = io.open(filepath, "r")
     if f ~= nil then
         io.close(f)
@@ -38,7 +38,7 @@ if testfirstrun() == false then -- stuff to do when you start the program for th
     print("This is the first time running LES")
 
     function setautoadd(newval) -- declaring the function that replaces the "addtostartup" variable in the settings text file to match the users' dialog box selection.
-        local hFile = io.open(HomePath .. "/.les/settings.ini", "r") -- Reading settings.
+        local hFile = io.open(GetDataPath("settings.ini"), "r") -- Reading settings.
         local restOfFile
         local lineCt = 1
         local newline = "addtostartup = " .. newval .. [[]]
@@ -56,7 +56,7 @@ if testfirstrun() == false then -- stuff to do when you start the program for th
         end
         hFile:close()
 
-        hFile = io.open(HomePath .. "/.les/settings.ini", "w") -- write the file.
+        hFile = io.open(GetDataPath("settings.ini"), "w") -- write the file.
         for i, line in ipairs(lines) do
             hFile:write(line, "\n")
         end
@@ -100,7 +100,7 @@ end
 function testcurrentversion(ver)
 
     print("testing for: " .. ver)
-    local filepath = (HomePath .. "/.les/resources/version.txt")
+    local filepath = GetDataPath("resources/version.txt")
     local boi = io.open(filepath, "r") -- some of my variable names are super dumb; "version" was already in use so "boi" seemed like the next best choice?
 
     if boi ~= nil then
@@ -143,12 +143,12 @@ end
 --	Integrity checks  --
 ------------------------
 
--- these functions check the if the files nescesary for the script to function; exist. 
+-- these functions check the if the files nescesary for the script to function; exist.
 -- hammerspoon completely spaces out of they don't.
 -- I declare them up here because it fits the theme of this section of the script.
 
 function testsettings()
-    local filepath = HomePath .. "/.les/settings.ini"
+    local filepath = GetDataPath("settings.ini")
     local f = io.open(filepath, "r")
     local var = nil
     if f ~= nil then
@@ -175,7 +175,7 @@ function testsettings()
 end
 
 function testmenuconfig()
-    local filepath = HomePath .. "/.les/menuconfig.ini"
+    local filepath = GetDataPath("menuconfig.ini")
     local f = io.open(filepath, "r")
     local var = nil
     if f ~= nil then
@@ -329,7 +329,7 @@ menubartabledebugon = {{
     end
 }}
 
-filepath = HomePath .. "/.les/resources/strict.txt"
+filepath = GetDataPath("resources/strict.txt")
 f = io.open(filepath, "r")
 if f ~= nil then
     io.close(f)
@@ -347,7 +347,7 @@ filepath = nil -- sets the strict time setting
 -- this is what happens when you hit "readme" in the default plugin menu.
 
 function readme()
-    local readmejingleobj = hs.sound.getByFile(HomePath .. "/.les/resources/readmejingle.wav")
+    local readmejingleobj = hs.sound.getByFile(GetDataPath("resources/readmejingle.wav"))
     readmejingleobj:device(nil)
     readmejingleobj:loopSound(false)
     readmejingleobj:play()
@@ -2127,7 +2127,7 @@ function cheatmenu()
                 ShellCopy(JoinPaths(BundleResourceAssetsPath, "als.als"), ScriptUserResourcesPath)
                 print("done cloning project")
                 hs.osascript.applescript([[delay 2
-          tell application "Finder" to open POSIX file "]] .. HomePath .. [[/.les/resources/als.als"]])
+          tell application "Finder" to open POSIX file "]] .. GetDataPath([[resources/als.als"]]))
                 return true
             end
 
@@ -2246,7 +2246,7 @@ function coolfunc(hswindow, appname, straw) -- function that handles saving and 
         oldtrackname = trackname
         print(_G["timer_" .. oldtrackname])
         ShellCreateDirectory(JoinPaths(ScriptUserResourcesPath, "time"))
-        local filepath = HomePath .. [[/.les/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]]
+        local filepath = GetDataPath([[resources/time/]] .. oldtrackname .. "_time" .. [[.txt]])
         local f2 = io.open(filepath, "r")
         if f2 ~= nil then
             io.close(f2)
@@ -2272,7 +2272,7 @@ function coolfunc(hswindow, appname, straw) -- function that handles saving and 
         return
     end
 
-    filepath = HomePath .. [[/.les/resources/time/]] .. trackname .. "_time" .. [[.txt]] -- loading old time (if it exists)
+    filepath = GetDataPath([[resources/time/]] .. trackname .. "_time" .. [[.txt]]) -- loading old time (if it exists)
     local f = io.open(filepath, "r")
     if f ~= nil then
         print("timer file found")
