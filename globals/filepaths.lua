@@ -1,4 +1,5 @@
 require("helpers")
+require("globals.filenames")
 
 -- Variables determined upon runtime
 HomePath = os.getenv("HOME")
@@ -10,5 +11,14 @@ ScriptUserResourcesPath = ScriptUserPath .. "/resources"
 
 BundleContentPath = BundlePath .. "/Contents/Resources"
 BundleResourcePath = BundleContentPath .. "/extensions/hs/les"
-BundleIconPath = QuoteString(BundleContentPath .. "/AppIcon.icns")
+BundleResourceAssetsPath = BundleResourcePath .. "/assets"
+BundleIconPath = QuoteString(JoinPaths(BundleContentPath, AppIcon))
+
+function GetUserPath(string)
+    return JoinPaths(ScriptUserResourcesPath, string)
+end
+
+function GetBundleAssetsPath(string)
+    return JoinPaths(BundleResourceAssetsPath, string)
+end
 

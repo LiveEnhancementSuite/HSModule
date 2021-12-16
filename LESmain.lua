@@ -1,3 +1,4 @@
+require("helpers")
 require("globals.filepaths")
 
 version = "release v15" -- allows users to check the version of the script file by testing the variable "version" in the console
@@ -60,20 +61,16 @@ if testfirstrun() == false then -- stuff to do when you start the program for th
         hFile:close()
     end
 
-    function executeusingshell(proc, arg1, arg2)
-        arg1 = arg1:gsub(" ", "\\ ")
-        arg2 = arg2:gsub(" ", "\\ ")
-        copyExecInstruction = proc .. " " .. arg1 .. " " .. arg2
-        print("Executing " .. copyExecInstruction .. " using zsh")
-        os.execute("zsh -c \"" .. copyExecInstruction .. "\"")
-    end
+    ShellCreateDirectory(ScriptUserResourcesPath)
 
-    os.execute("zsh -c \"mkdir -p ~/.les/resources\"") -- creates the resources folder
-    os.execute("zsh -c \"echo '' >~/.les/resources/firstrun.txt\"") -- making sure the section of this script doesn't trigger twice
-    os.execute("zsh -c \"echo '' >~/.les/resources/strict.txt\"") -- enables strict time by default
-    executeusingshell("cp", BundleResourcePath .. "/assets/settings.ini", "~/.les/")
-    executeusingshell("cp", BundleResourcePath .. "/assets/menuconfig.ini", "~/.les/")
-    executeusingshell("cp", BundleResourcePath .. "/assets/readmejingle.ini", "~/.les/resources/")
+    -- Making sure the section of this script doesn't trigger twice
+    ShellCreateEmptyFile(JoinPaths(ScriptUserResourcesPath, FirstRun))
+    -- Enables strict time by default
+    ShellCreateEmptyFile(JoinPaths(ScriptUserResourcesPath, StrictTimeModifier))
+
+    ShellCopy(GetBundleAssetsPath(ConfigFile), ScriptUserPath .. PathDelimiter)
+    ShellCopy(GetBundleAssetsPath(MenuConfigFile), ScriptUserPath .. PathDelimiter)
+    ShellCopy(GetBundleAssetsPath("readmejingle.ini"), ScriptUserPath .. PathDelimiter)
 
     b, t, o = hs.osascript.applescript(
         [[tell application "System Events" to display dialog "You're all set! Would you like to set LES to launch on login? (this can be changed later)" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file ]] ..
@@ -121,7 +118,7 @@ function testcurrentversion(ver)
         return false
 
     else
-        os.execute([[echo 'beta 9' >~/.les/resources/version.txt]])
+        ShellOverwriteFile("beta 9", JoinPaths(ScriptUserResourcesPath, VersionFile))
         return true
     end
 
@@ -131,9 +128,8 @@ if testcurrentversion("beta 9") == false and testfirstrun() == true then -- this
     hs.notify.show("Live Enhancement Suite", "Updating and restarting...", "Old installation detected")
     local var = hs.osascript.applescript([[delay 2]])
     if var == true then
-        os.execute([[rm ~/.les/resources/version.txt]])
-        os.execute([[echo 'beta 9' >~/.les/resources/version.txt]])
-        os.execute([[cp "]] .. BundleResourcePath .. [["/init.lua ~/.les/]]) -- otherwise replace the init.lua again with the one currently in the application.
+        ShellOverwriteFile("beta 9", JoinPaths(ScriptUserPath, JoinPaths("resources", "version.txt")))
+        ShellCopy(JoinPaths(BundleResourcePath, ScriptInitFile), ScriptUserPath .. PathDelimiter)
         hs.alert.show("Restarting..")
         hs.osascript.applescript([[delay 2]])
         hs.reload()
@@ -167,7 +163,7 @@ function testsettings()
         b = nil
         t = nil
         if o == [[{ 'bhit':'utxt'("Yes") }]] then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/settings.ini ~/.les/]])
+          ShellCopy(GetBundleAssetsPath(ConfigFile), ScriptUserPath .. PathDelimiter)
         elseif o == [[{ 'bhit':'utxt'("No") }]] then
             os.exit()
         end
@@ -194,7 +190,7 @@ function testmenuconfig()
         b = nil
         t = nil
         if o == [[{ 'bhit':'utxt'("Yes") }]] then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/menuconfig.ini ~/.les/]])
+            ShellCopy(JoinPaths(BundleResourcePath, MenuConfigFile), ScriptUserPath .. PathDelimiter)
         elseif o == [[{ 'bhit':'utxt'("No") }]] then
             os.exit()
         end
@@ -1424,8 +1420,7 @@ function InstallInsertWhere()
         extractLocation = hs.dialog.chooseFileOrFolder("Please select the location to extract InsertWhere:",
             "~/Music/Ableton", false, true, false)
         if extractLocation ~= nil then
-            os.execute([[cp "]] .. BundleResourcePath .. [["/assets/InsertWhere.amxd ]] .. [["]] .. extractLocation["1"] ..
-                           [["]])
+            ShellCopy(JoinPaths(BundleResourceAssetsPath, "InsertWhere.amxd"), extractLocation["1"])
             hs.osascript.applescript(
                 [[tell application "System Events" to display dialog "Success!!" & return & "For extra ease of use, include InsertWhere in your default template." & return & "" & return & "For more information on InsertWhere, visit the documentation website linked under the ""Manual 📖"" button in the tray." & return & "" & return & "Thank you Mat Zo for making this amazing device!" buttons {"Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file ]] ..
                     BundleIconPath)
@@ -2353,10 +2348,9 @@ function cheatmenu()
                     end
                 end
                 print("live is closed")
-                os.execute([[mkdir -p ~/.les/resources/als\ Lessons]])
-                os.execute([[cp "]] .. BundleResourcePath ..
-                               [[/assets/als Lessons/lessonsEN.txt" ~/.les/resources/als\ Lessons]])
-                os.execute([[cp "]] .. BundleResourcePath .. [[/assets/als.als" ~/.les/resources]])
+                ShellCreateDirectory(JoinPaths(ScriptUserResourcesPath, "als Lessons"))
+                ShellCopy(JoinPaths(BundleResourceAssetsPath, JoinPaths("als Lessons", "lessonsEN.txt")), JoinPaths(ScriptUserResourcesPath, "als Lessons"))
+                ShellCopy(JoinPaths(BundleResourceAssetsPath, "als.als"), ScriptUserResourcesPath)
                 print("done cloning project")
                 hs.osascript.applescript([[delay 2
           tell application "Finder" to open POSIX file "]] .. HomePath .. [[/.les/resources/als.als"]])
@@ -2484,7 +2478,7 @@ function setstricttime() -- this function manages the check box in the menu
         menubarwithdebugoff[7].state = "off"
         menubartabledebugon[11].state = "off"
         _G.stricttimevar = false
-        os.execute([[rm ~/.les/resources/strict.txt]])
+        ShellDeleteFile(JoinPaths(ScriptUserResourcesPath, StrictTimeModifier))
         if appname then
             clock:start()
         end
@@ -2492,7 +2486,7 @@ function setstricttime() -- this function manages the check box in the menu
         menubarwithdebugoff[7].state = "on"
         menubartabledebugon[11].state = "on"
         _G.stricttimevar = true
-        os.execute([[echo '' >~/.les/resources/strict.txt]])
+        ShellOverwriteFile("beta 9", JoinPaths(ScriptUserResourcesPath, StrictTimeModifier))
         if testLive() ~= true then
             clock:stop()
         end
@@ -2505,15 +2499,14 @@ function coolfunc(hswindow, appname, straw) -- function that handles saving and 
     if trackname ~= nil then -- saving old time
         oldtrackname = trackname
         print(_G["timer_" .. oldtrackname])
-        os.execute([[mkdir ~/.les/resources/time]])
+        ShellCreateDirectory(JoinPaths(ScriptUserResourcesPath, "time"))
         local filepath = HomePath .. [[/.les/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]]
         local f2 = io.open(filepath, "r")
         if f2 ~= nil then
             io.close(f2)
-            os.execute([[rm ~/.les/resources/time/]] .. oldtrackname .. "_time" .. [[.txt]])
+            ShellDeleteFile(JoinPaths(JoinPaths(ScriptUserResourcesPath, "time"), oldtrackname .. "_time" .. [[.txt]]))
         end
-        os.execute([[echo ']] .. _G["timer_" .. oldtrackname] .. [[' >~/.les/resources/time/]] .. oldtrackname ..
-                       "_time" .. [[.txt]])
+        ShellOverwriteFile(_G["timer_" .. oldtrackname], JoinPaths(JoinPaths(ScriptUserResourcesPath, "time"), oldtrackname .. "_time" .. [[.txt]]))
         _G["timer_" .. oldtrackname] = nil
     end
 
@@ -2628,7 +2621,7 @@ function requesttime() -- this is the function for when someone checks the curre
         response = hs.dialog.blockAlert("Are you sure?", "This action cannot be undone", "No", "Yes",
             "NSCriticalAlertStyle")
         if response == "Yes" then
-            os.execute([[rm ~/.les/resources/time/]] .. trackname .. "_time" .. [[.txt]])
+            ShellDeleteFile(JoinPaths(JoinPaths(ScriptUserResourcesPath, "time"), trackname .. "_time" .. [[.txt]]))
             coolfunc()
         end
     end
@@ -3622,8 +3615,8 @@ if _G.bookmarkx == nil or _G.dynamicreload == nil or _G.double0todelete == nil t
     b = nil
     t = nil
     if o == [[{ 'bhit':'utxt'("Yes") }]] then
-        os.execute([[rm ~/.les/settings.ini]])
-        os.execute([[cp "]] .. BundleResourcePath .. [["/assets/settings.ini ~/.les/]])
+        ShellDeleteFile(JoinPaths(ScriptUserPath, ConfigFile))
+        ShellCopy(JoinPaths(BundleResourceAssetsPath, ConfigFile), ScriptUserPath .. PathDelimiter)
         reloadLES()
     elseif o == [[{ 'bhit':'utxt'("No") }]] then
         hs.osascript.applescript(
@@ -3642,8 +3635,8 @@ if _G.absolutereplace == nil or _G.enableclosewindow == nil or _G.vstshortcuts =
     b = nil
     t = nil
     if o == [[{ 'bhit':'utxt'("Yes") }]] then
-        os.execute([[rm ~/.les/settings.ini]])
-        os.execute([[cp "]] .. BundleResourcePath .. [["/assets/settings.ini ~/.les/]])
+        ShellDeleteFile(JoinPaths(ScriptUserPath, ConfigFile))
+        ShellCopy(JoinPaths(BundleResourceAssetsPath, ConfigFile), ScriptUserPath .. PathDelimiter)
         reloadLES()
     end
     o = nil
