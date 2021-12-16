@@ -2371,22 +2371,6 @@ function requesttime() -- this is the function for when someone checks the curre
             coolfunc()
         end
     end
-    -- if trackname == "unsaved_project" then
-    --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "The total time you've spent in unsaved projects is" & return & "]] .. currenttime .. [[." buttons {"Reset Time", "Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file ]] .. BundleIconPath)
-    -- else
-    --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "The total time you've spent in the []] .. trackname .. [[] project is" & return & "]] .. currenttime .. [[." buttons {"Reset Time", "Ok"} default button "Ok" with title "Live Enhancement Suite" with icon POSIX file ]] .. BundleIconPath)
-    -- end
-    -- b = nil
-    -- t = nil
-    -- if o == [[{ 'bhit':'utxt'("Reset Time") }]] then
-    --   b, t, o = hs.osascript.applescript([[tell application "Live Enhancement Suite" to display dialog "Are you sure?" buttons {"Yes", "No"} default button "No" with title "Live Enhancement Suite" with icon POSIX file ]] .. BundleIconPath)
-    --   if o == [[{ 'bhit':'utxt'("Yes") }]] then
-    --     _G["timer_" .. trackname] = nil
-    --     _G["timer_" .. oldtrackname] = nil
-    --     os.execute([[rm ~/.les/resources/time/]] .. trackname .. "_time" .. [[.txt]])
-    --     coolfunc()
-    --   end
-    -- end
     hs.application.launchOrFocus("Live") -- focusses live again when closing the dialog box.
 end
 
